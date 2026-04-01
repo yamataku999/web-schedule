@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEB制作 スケジュール管理</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f14;--surface:#161920;--surface2:#1e2230;
+  --border:#2a2f40;--accent:#4fffb0;--accent2:#ff6b6b;--accent3:#ffd166;
+  --text:#e8ecf4;--text-dim:#7a8299;--text-muted:#444d66;
+  --mono:'DM Mono',monospace;--heading:'Barlow Condensed',sans-serif;--body:'Noto Sans JP',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+/* 【FIX-1】 デフォルトでbodyを非表示にしてチラつき防止。JSで表示判定後にvisibleを付与 */
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;overflow-x:hidden;visibility:hidden;}
+body.ready{visibility:visible;}
+
+/* ══ AUTH SCREENS ══ */
+.auth-screen{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:40px 20px;
+  background:radial-gradient(ellipse at 50% 40%,#141a2a 0%,#0d0f14 70%);
+}
+.auth-screen.visible{display:flex;}
+.auth-logo{font-family:var(--heading);font-size:11px;letter-spacing:6px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:5px 10px;margin-bottom:32px;}
+.auth-title{font-family:var(--heading);font-size:36px;font-weight:700;letter-spacing:3px;color:var(--text);margin-bottom:8px;text-align:center;}
+.auth-sub{font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:2px;margin-bottom:48px;text-align:center;}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:36px 40px;width:100%;max-width:400px;}
+.auth-card-title{font-family:var(--heading);font-size:16px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);margin-bottom:24px;}
+.auth-field{margin-bottom:18px;}
+.auth-field label{display:block;font-size:11px;color:var(--text-dim);margin-bottom:6px;letter-spacing:.5px;}
+.auth-field input[type="text"]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 14px;font-family:var(--mono);font-size:14px;outline:none;border-radius:2px;transition:border-color .2s;}
+.auth-field input[type="text"]:focus{border-color:var(--accent);}
+.auth-field input::placeholder{color:var(--text-muted);}
+
+/* ─ PIN ─ */
+.pin-row{display:flex;gap:10px;justify-content:center;margin-top:4px;}
+.pin-digit{width:56px;height:62px;background:var(--surface2);border:1px solid var(--border);color:var(--accent);font-family:var(--mono);font-size:26px;font-weight:700;text-align:center;outline:none;border-radius:3px;transition:border-color .2s;caret-color:transparent;}
+.pin-digit:focus{border-color:var(--accent);background:var(--surface);}
+.pin-digit.filled{border-color:rgba(79,255,176,.4);}
+
+/* ─ Auth buttons ─ */
+.auth-btn{width:100%;background:var(--accent);color:#000;border:none;padding:13px;font-family:var(--heading);font-size:15px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:20px;border-radius:2px;transition:all .2s;}
+.auth-btn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(79,255,176,.25);}
+.auth-btn.sub{background:transparent;color:var(--text-dim);border:1px solid var(--border);margin-top:10px;}
+.auth-btn.sub:hover{border-color:var(--accent);color:var(--accent);background:transparent;transform:none;box-shadow:none;}
+
+/* ─ Messages ─ */
+.auth-error{font-family:var(--mono);font-size:11px;color:var(--accent2);margin-top:12px;display:none;text-align:center;line-height:1.7;white-space:pre-line;}
+.auth-ok{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:12px;display:none;text-align:center;}
+.auth-switch{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);text-align:center;}
+.auth-switch p{font-family:var(--mono);font-size:10px;color:var(--text-muted);margin-bottom:6px;}
+.auth-link{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;text-decoration:underline;}
+.auth-link:hover{color:#fff;}
+
+/* ─ User chips ─ */
+.chip-section{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+.chip-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;}
+.user-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:5px 10px;margin:4px 4px 4px 0;cursor:pointer;transition:all .15s;}
+.user-chip:hover{border-color:var(--accent);color:var(--accent);}
+.user-chip-dot{width:6px;height:6px;border-radius:50%;}
+.user-chip-name{font-size:12px;font-weight:500;}
+.auth-credit{margin-top:40px;font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:2px;}
+
+/* ══ APP ══ */
+#app{display:none;flex-direction:column;height:100vh;}
+.topbar{display:flex;align-items:center;gap:16px;padding:0 24px;height:52px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;z-index:200;}
+.logo-mark{font-family:var(--heading);font-weight:700;font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);padding:3px 7px;line-height:1;flex-shrink:0;}
+.logo-title{font-family:var(--heading);font-size:20px;font-weight:600;letter-spacing:2px;color:var(--text);line-height:1;flex-shrink:0;}
+.topbar-sep{width:1px;height:24px;background:var(--border);flex-shrink:0;}
+
+.tab-bar{display:flex;align-items:stretch;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;height:100%;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab{display:flex;align-items:center;gap:7px;padding:0 14px;height:100%;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .18s;flex-shrink:0;max-width:200px;user-select:none;}
+.tab:hover{background:var(--surface);}
+.tab.active{border-bottom-color:var(--accent);background:var(--surface);}
+.tab-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.tab-name{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;}
+.tab.active .tab-name{color:var(--accent);}
+.tab-close{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px;flex-shrink:0;transition:color .15s;display:none;}
+.tab:hover .tab-close{display:block;}
+.tab-close:hover{color:var(--accent2);}
+.tab-add-btn{display:flex;align-items:center;justify-content:center;width:38px;height:100%;flex-shrink:0;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:22px;transition:color .15s;}
+.tab-add-btn:hover{color:var(--accent);}
+.user-badge{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:4px 10px;flex-shrink:0;}
+.user-badge-avatar{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--heading);font-size:12px;font-weight:700;color:#000;flex-shrink:0;}
+.user-badge-name{font-size:12px;font-weight:500;}
+.logout-btn{background:none;border:1px solid transparent;color:var(--text-muted);cursor:pointer;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:3px 6px;border-radius:2px;transition:all .15s;}
+.logout-btn:hover{border-color:var(--border);color:var(--text-dim);}
+
+.app-body{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:340px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:24px 20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.panel{flex:1;overflow-y:auto;padding:28px 32px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.panel::-webkit-scrollbar{width:4px;}
+.panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.section-label{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-row{margin-bottom:14px;}
+.form-row label{display:block;font-size:11px;color:var(--text-dim);margin-bottom:5px;letter-spacing:.5px;}
+.form-row input[type="date"],.form-row input[type="text"],.form-row input[type="number"],.form-row select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 11px;font-family:var(--mono);font-size:12px;outline:none;border-radius:2px;transition:border-color .2s;}
+.form-row input:focus,.form-row select:focus{border-color:var(--accent);}
+.settings-row{display:flex;gap:10px;margin-bottom:14px;}
+.settings-row .form-row{flex:1;margin-bottom:0;}
+.sitename-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--accent);padding:9px 12px;font-family:var(--heading);font-size:18px;font-weight:600;letter-spacing:1px;outline:none;border-radius:2px;transition:border-color .2s;}
+.sitename-input:focus{border-color:var(--accent);}
+.sitename-input::placeholder{color:var(--text-muted);}
+
+.phase-item{background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:6px;transition:border-color .2s;}
+.phase-item:hover{border-color:#3a4055;}
+.phase-header{display:flex;align-items:center;gap:7px;padding:8px 10px;}
+.phase-color-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.phase-name-input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--body);font-size:12px;outline:none;font-weight:500;min-width:0;}
+.phase-duration-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.phase-days-input{width:40px;background:var(--bg);border:1px solid var(--border);color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:500;text-align:center;padding:3px 4px;outline:none;border-radius:2px;}
+.phase-days-input:focus{border-color:var(--accent);}
+.days-label{font-size:10px;color:var(--text-muted);font-family:var(--mono);}
+.phase-remove-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px;transition:color .2s;}
+.phase-remove-btn:hover{color:var(--accent2);}
+.add-phase-btn{width:100%;background:transparent;border:1px dashed var(--border);color:var(--text-dim);padding:8px;cursor:pointer;font-family:var(--body);font-size:11px;transition:all .2s;border-radius:2px;margin-top:4px;}
+.add-phase-btn:hover{border-color:var(--accent);color:var(--accent);}
+.gen-btn{width:100%;background:var(--accent);color:#000;border:none;padding:12px;font-family:var(--heading);font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:20px;transition:all .2s;border-radius:2px;}
+.gen-btn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 20px rgba(79,255,176,.25);}
+.del-proj-btn{width:100%;background:transparent;color:var(--text-muted);border:1px solid var(--border);padding:8px;cursor:pointer;font-family:var(--body);font-size:11px;transition:all .2s;border-radius:2px;margin-top:8px;}
+.del-proj-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);gap:12px;}
+.empty-icon{font-size:40px;opacity:.25;}
+.empty-text{font-family:var(--heading);font-size:16px;letter-spacing:2px;text-transform:uppercase;opacity:.4;}
+.no-project{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:16px;}
+.no-project-msg{font-family:var(--heading);font-size:18px;letter-spacing:2px;color:var(--text-dim);text-align:center;}
+.no-project-btn{background:var(--accent);color:#000;border:none;padding:12px 28px;font-family:var(--heading);font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;}
+.no-project-btn:hover{background:#fff;}
+
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px;}
+.summary-card{background:var(--surface);border:1px solid var(--border);padding:14px 16px;border-radius:3px;}
+.summary-card-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;}
+.summary-card-value{font-family:var(--heading);font-size:26px;font-weight:700;color:var(--text);line-height:1;}
+.summary-card-sub{font-size:10px;color:var(--text-dim);margin-top:4px;font-family:var(--mono);}
+.summary-card.accent .summary-card-value{color:var(--accent);}
+.summary-card.danger .summary-card-value{color:var(--accent2);}
+
+.gantt-wrap{margin-bottom:28px;}
+.gantt-title{font-family:var(--heading);font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text-dim);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.gantt-title::before{content:'//';color:var(--accent);font-family:var(--mono);}
+.gantt-axis{display:flex;margin-left:190px;margin-bottom:4px;position:relative;height:18px;overflow:hidden;}
+.gantt-tick{position:absolute;font-family:var(--mono);font-size:9px;color:var(--text-muted);transform:translateX(-50%);white-space:nowrap;}
+.gantt-row{display:flex;align-items:center;margin-bottom:5px;}
+.gantt-row-label{width:190px;flex-shrink:0;padding-right:10px;}
+.gantt-phase-name{font-size:11px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gantt-phase-dates{font-family:var(--mono);font-size:9px;color:var(--text-muted);}
+.gantt-timeline{flex:1;position:relative;height:36px;}
+.gantt-grid-line{position:absolute;top:0;bottom:0;width:1px;background:var(--border);opacity:.4;}
+.gantt-bar-container{position:absolute;top:5px;height:26px;border-radius:2px;display:flex;align-items:center;padding:0 7px;transition:filter .2s;cursor:default;overflow:hidden;}
+.gantt-bar-container:hover{filter:brightness(1.2);z-index:10;}
+.gantt-bar-text{font-family:var(--mono);font-size:9px;color:rgba(0,0,0,.85);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gantt-today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--accent2);z-index:5;}
+.gantt-today-label{position:absolute;top:-18px;font-family:var(--mono);font-size:9px;color:var(--accent2);transform:translateX(-50%);white-space:nowrap;z-index:6;letter-spacing:1px;}
+
+.section-sep{height:1px;background:var(--border);margin:24px 0;}
+.phase-table{width:100%;border-collapse:collapse;font-size:12px;}
+.phase-table th{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.phase-table td{padding:9px 10px;border-bottom:1px solid rgba(42,47,64,.5);vertical-align:middle;}
+.phase-table tr:hover td{background:var(--surface);}
+.td-phase-name{display:flex;align-items:center;gap:7px;}
+.td-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.td-mono{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
+.td-days{font-family:var(--heading);font-size:18px;font-weight:700;line-height:1;}
+.td-pct{font-family:var(--mono);font-size:10px;color:var(--text-dim);}
+.progress-mini{height:3px;background:var(--border);border-radius:2px;overflow:hidden;width:100px;margin-top:3px;}
+.progress-mini-fill{height:100%;border-radius:2px;}
+
+.notice{background:rgba(255,209,102,.08);border:1px solid rgba(255,209,102,.3);border-left:3px solid var(--accent3);padding:10px 14px;border-radius:2px;margin-top:16px;font-size:11px;color:var(--accent3);display:flex;align-items:center;gap:8px;font-family:var(--mono);}
+.notice.over{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.3);border-left:3px solid var(--accent2);color:var(--accent2);}
+.notice.ok{background:rgba(79,255,176,.06);border:1px solid rgba(79,255,176,.2);border-left:3px solid var(--accent);color:var(--accent);}
+.status-badge{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border-radius:2px;margin-left:10px;vertical-align:middle;}
+.badge-ok{background:rgba(79,255,176,.15);color:var(--accent);}
+.badge-over{background:rgba(255,107,107,.15);color:var(--accent2);}
+.badge-pending{background:rgba(122,130,153,.15);color:var(--text-dim);}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;}
+.dialog{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:28px 32px;max-width:360px;width:90%;}
+.dialog-title{font-family:var(--heading);font-size:18px;letter-spacing:1px;margin-bottom:8px;}
+.dialog-msg{font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:20px;}
+.dialog-btns{display:flex;gap:8px;justify-content:flex-end;}
+.dialog-cancel{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:8px 16px;cursor:pointer;font-family:var(--body);font-size:12px;border-radius:2px;transition:all .2s;}
+.dialog-cancel:hover{border-color:var(--text-dim);color:var(--text);}
+.dialog-confirm{background:var(--accent2);border:none;color:#fff;padding:8px 16px;cursor:pointer;font-family:var(--body);font-size:12px;border-radius:2px;transition:all .2s;}
+.dialog-confirm:hover{background:#ff4444;}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="auth-screen" id="screenLogin">
+  <div class="auth-logo">WEB DIR</div>
+  <div class="auth-title">SCHEDULE</div>
+  <div class="auth-sub">WEB制作 スケジュール管理システム</div>
+  <div class="auth-card">
+    <div class="auth-card-title">ログイン</div>
+    <div class="auth-field">
+      <label>名前</label>
+      <input type="text" id="loginName" placeholder="例：zero / ぜろ" autocomplete="off">
+    </div>
+    <div class="auth-field">
+      <label>暗証番号（4桁）</label>
+      <div class="pin-row" id="loginPinRow">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      </div>
+    </div>
+    <div class="auth-error" id="loginError"></div>
+    <button class="auth-btn" id="loginBtn">ログインする</button>
+    <div class="auth-switch">
+      <p>アカウントをお持ちでない方</p>
+      <span class="auth-link" onclick="showScreen('screenRegister')">新規アカウントを作成する →</span>
+    </div>
+    <div class="chip-section" id="loginChipsWrap" style="display:none">
+      <div class="chip-label">登録済みユーザー</div>
+      <div id="loginChips"></div>
+    </div>
+  </div>
+  <div class="auth-credit">制作者：Yamada</div>
+</div>
+
+<!-- ══ REGISTER ══ -->
+<div class="auth-screen" id="screenRegister">
+  <div class="auth-logo">WEB DIR</div>
+  <div class="auth-title">SCHEDULE</div>
+  <div class="auth-sub">WEB制作 スケジュール管理システム</div>
+  <div class="auth-card">
+    <div class="auth-card-title">新規アカウント作成</div>
+    <div class="auth-field">
+      <label>名前（ローマ字またはひらがな）</label>
+      <input type="text" id="regName" placeholder="例：zero / ぜろ" autocomplete="off">
+    </div>
+    <div class="auth-field">
+      <label>暗証番号（4桁）― 自由に決めてください</label>
+      <div class="pin-row" id="regPinRow">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      </div>
+    </div>
+    <div class="auth-field">
+      <label>暗証番号（確認）</label>
+      <div class="pin-row" id="regPinRow2">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+        <input class="pin-digit" type="password" maxlength="1" inputmode="numeric">
+      </div>
+    </div>
+    <div class="auth-error" id="regError"></div>
+    <div class="auth-ok" id="regOk">✓ アカウントを作成しました。ログインしてください。</div>
+    <button class="auth-btn" id="regBtn">アカウントを作成する</button>
+    <button class="auth-btn sub" onclick="showScreen('screenLogin')">← ログイン画面に戻る</button>
+  </div>
+  <div class="auth-credit">制作者：Yamada</div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app">
+  <div class="topbar">
+    <div class="logo-mark">DIR</div>
+    <div class="logo-title">SCHEDULE</div>
+    <div class="topbar-sep"></div>
+    <div class="tab-bar" id="tabBar"></div>
+    <button class="tab-add-btn" onclick="addProject()">＋</button>
+    <div class="topbar-sep"></div>
+    <div class="user-badge" id="userBadge"></div>
+    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+  </div>
+  <div class="app-body">
+    <aside class="sidebar"><div id="sidebarContent"></div></aside>
+    <main class="panel"><div id="panelContent"></div></main>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════
+   CONSTANTS
+════════════════════════ */
+const COLORS=['#4fffb0','#74b9ff','#ffd166','#ff6b6b','#a29bfe','#fd79a8','#00cec9','#e17055','#6c5ce7','#55efc4'];
+const AVATAR_COLORS=['#4fffb0','#74b9ff','#ffd166','#ff6b6b','#a29bfe','#fd79a8'];
+const DEFAULT_PHASES=[
+  {name:'要件定義・ヒアリング',days:5},
+  {name:'初回資料作成',days:7},
+  {name:'2回目資料作成',days:7},
+  {name:'デザインレビュー・修正',days:5},
+  {name:'コーディング',days:15},
+  {name:'テスト・品質確認',days:4},
+  {name:'修正・調整',days:3},
+  {name:'公開準備',days:2},
+  {name:'公開',days:1},
+];
+
+/* ════════════════════════
+   UTILITIES
+════════════════════════ */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// 【FIX-2】シングルクォートもエスケープするHTML属性用esc
+function escAttr(s){return esc(s).replace(/'/g,'&#39;');}
+function nameKey(n){return n.trim().toLowerCase();}
+function simpleHash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))&0xffff;return h;}
+function toDateStr(d){return d.toISOString().slice(0,10);}
+function fmt(d){return d.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'});}
+function fmtF(d){return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});}
+
+/* ════════════════════════
+   PIN SETUP
+════════════════════════ */
+function setupPins(rowId,onComplete){
+  const row=document.getElementById(rowId);if(!row)return;
+  const digits=[...row.querySelectorAll('.pin-digit')];
+  digits.forEach((inp,i)=>{
+    inp.addEventListener('input',()=>{
+      const v=inp.value.replace(/\D/g,'');
+      inp.value=v?v.slice(-1):'';
+      inp.classList.toggle('filled',!!inp.value);
+      if(inp.value&&i<digits.length-1)digits[i+1].focus();
+      // 4桁揃ったらコールバック
+      if(onComplete&&digits.every(d=>d.value))onComplete();
+    });
+    inp.addEventListener('keydown',e=>{
+      if(e.key==='Backspace'&&!inp.value&&i>0){
+        digits[i-1].value='';digits[i-1].classList.remove('filled');digits[i-1].focus();
+      }
+    });
+    inp.addEventListener('paste',e=>{
+      e.preventDefault();
+      const text=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,4);
+      digits.forEach((d,j)=>{d.value=text[j]||'';d.classList.toggle('filled',!!d.value);});
+      const next=Math.min(text.length,3);digits[next].focus();
+      if(onComplete&&digits.every(d=>d.value))onComplete();
+    });
+  });
+}
+
+function getPin(rowId){return[...document.getElementById(rowId).querySelectorAll('.pin-digit')].map(d=>d.value).join('');}
+function clearPin(rowId){[...document.getElementById(rowId).querySelectorAll('.pin-digit')].forEach(d=>{d.value='';d.classList.remove('filled');});}
+
+/* ════════════════════════
+   SCREEN CONTROL
+════════════════════════ */
+function showScreen(id){
+  document.querySelectorAll('.auth-screen').forEach(s=>s.classList.remove('visible'));
+  document.getElementById('app').style.display='none';
+  const t=document.getElementById(id);if(t)t.classList.add('visible');
+  // clear errors & pins on switch
+  ['loginError','regError','regOk'].forEach(k=>{const e=document.getElementById(k);if(e){e.style.display='none';e.textContent='';}});
+  if(id==='screenRegister'){clearPin('regPinRow');clearPin('regPinRow2');setTimeout(()=>{const i=document.getElementById('regName');if(i)i.focus();},50);}
+  if(id==='screenLogin'){clearPin('loginPinRow');setTimeout(()=>{const i=document.getElementById('loginName');if(i)i.focus();},50);}
+}
+
+function showApp(){
+  document.querySelectorAll('.auth-screen').forEach(s=>s.classList.remove('visible'));
+  const app=document.getElementById('app');
+  app.style.display='flex';app.style.flexDirection='column';
+  const col=AVATAR_COLORS[simpleHash(currentUser)%AVATAR_COLORS.length];
+  document.getElementById('userBadge').innerHTML=`<div class="user-badge-avatar" style="background:${col}">${esc(currentUser.charAt(0).toUpperCase())}</div><span class="user-badge-name">${esc(currentUser)}</span>`;
+  load();renderAll();
+}
+
+/* ════════════════════════
+   ACCOUNTS
+════════════════════════ */
+function getAccounts(){try{return JSON.parse(localStorage.getItem('wps_accounts')||'{}');}catch(e){return{};}}
+function saveAccounts(a){localStorage.setItem('wps_accounts',JSON.stringify(a));}
+
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const p1=getPin('regPinRow'),p2=getPin('regPinRow2');
+  const err=document.getElementById('regError');
+  document.getElementById('regOk').style.display='none';
+  err.style.display='none';
+
+  if(!name){showErr('regError','名前を入力してください。');return;}
+  if(p1.length<4){showErr('regError','暗証番号を4桁すべて入力してください。');return;}
+  if(p2.length<4){showErr('regError','確認用の暗証番号を入力してください。');return;}
+  if(p1!==p2){showErr('regError','暗証番号が一致しません。\nもう一度確認してください。');clearPin('regPinRow2');return;}
+
+  const accounts=getAccounts();
+  const key=nameKey(name);
+  if(accounts[key]){showErr('regError','この名前はすでに登録されています。\n別の名前を使用してください。');return;}
+
+  // 【FIX-5】displayName を登録時の入力そのままで保存（大文字小文字を保持）
+  accounts[key]={displayName:name,pin:p1,createdAt:Date.now()};
+  saveAccounts(accounts);
+
+  document.getElementById('regOk').style.display='block';
+  document.getElementById('regName').value='';
+  clearPin('regPinRow');clearPin('regPinRow2');
+
+  setTimeout(()=>{
+    showScreen('screenLogin');
+    document.getElementById('loginName').value=name;
+    renderLoginChips();
+    const first=document.querySelector('#loginPinRow .pin-digit');if(first)first.focus();
+  },1200);
+}
+
+function doLogin(){
+  const name=document.getElementById('loginName').value.trim();
+  const pin=getPin('loginPinRow');
+  document.getElementById('loginError').style.display='none';
+
+  if(!name){showErr('loginError','名前を入力してください。');return;}
+  if(pin.length<4){showErr('loginError','暗証番号を4桁すべて入力してください。');return;}
+
+  const accounts=getAccounts();
+  const key=nameKey(name);
+  const account=accounts[key];
+
+  if(!account){showErr('loginError','このアカウントは存在しません。\nアカウント作成から登録してください。');return;}
+  if(account.pin!==pin){showErr('loginError','暗証番号が違います。');clearPin('loginPinRow');return;}
+
+  currentUser=account.displayName;
+  localStorage.setItem('wps_session',key);
+  showApp();
+}
+
+function doLogout(){
+  currentUser=null;
+  localStorage.removeItem('wps_session');
+  // 【FIX-4】ログアウト時にプロジェクトデータとactiveIdを完全クリア
+  projects=[];activeId=null;
+  showScreen('screenLogin');
+  document.getElementById('loginName').value='';
+  renderLoginChips();
+}
+
+function showErr(id,msg){const e=document.getElementById(id);e.textContent=msg;e.style.display='block';}
+
+/* 【FIX-2】data-name属性を使って安全にユーザー名を渡す */
+function renderLoginChips(){
+  const accounts=getAccounts();
+  const keys=Object.keys(accounts);
+  const wrap=document.getElementById('loginChipsWrap');
+  const chips=document.getElementById('loginChips');
+  if(keys.length===0){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  chips.innerHTML=keys.map(k=>{
+    const a=accounts[k];
+    const col=AVATAR_COLORS[simpleHash(a.displayName)%AVATAR_COLORS.length];
+    return `<div class="user-chip" data-name="${escAttr(a.displayName)}">
+      <div class="user-chip-dot" style="background:${col}"></div>
+      <span class="user-chip-name">${esc(a.displayName)}</span>
+    </div>`;
+  }).join('');
+  // イベント委任でクリック処理（onclick属性ではなくaddEventListenerで安全に）
+  chips.querySelectorAll('.user-chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+      const name=chip.getAttribute('data-name');
+      document.getElementById('loginName').value=name;
+      clearPin('loginPinRow');
+      const first=document.querySelector('#loginPinRow .pin-digit');if(first)first.focus();
+    });
+  });
+}
+
+/* ════════════════════════
+   STATE
+════════════════════════ */
+let currentUser=null,projects=[],activeId=null;
+function userDataKey(u){return 'wps_data_'+nameKey(u);}
+function save(){try{localStorage.setItem(userDataKey(currentUser),JSON.stringify(projects));}catch(e){}}
+function load(){
+  try{const d=localStorage.getItem(userDataKey(currentUser));projects=d?JSON.parse(d):[];}
+  catch(e){projects=[];}
+  // 【FIX-4】loadのたびにactiveIdをリセット（前ユーザーのIDが残らないよう）
+  activeId=projects.length>0?projects[projects.length-1].id:null;
+}
+
+/* ════════════════════════
+   PROJECT CRUD
+════════════════════════ */
+function addProject(){
+  const today=new Date(),end=new Date(today);end.setMonth(end.getMonth()+3);
+  const proj={
+    id:Date.now(),siteName:'新規案件'+(projects.length+1),
+    startDate:toDateStr(today),endDate:toDateStr(end),
+    workDays:5,bufferPct:15,
+    phases:DEFAULT_PHASES.map((p,i)=>({name:p.name,days:p.days,color:COLORS[i%COLORS.length]})),
+    color:COLORS[projects.length%COLORS.length]
+  };
+  projects.push(proj);activeId=proj.id;save();renderAll();
+  setTimeout(()=>{const i=document.getElementById('inp-sitename');if(i){i.focus();i.select();}},40);
+}
+
+function removeProjectConfirmed(id){
+  projects=projects.filter(p=>p.id!==id);
+  if(activeId===id)activeId=projects.length>0?projects[0].id:null;
+  save();renderAll();
+}
+function switchProject(id){activeId=id;renderAll();}
+function getActive(){return projects.find(p=>p.id===activeId)||null;}
+function updateField(key,value){const p=getActive();if(!p)return;p[key]=value;if(key==='siteName')renderTabs();save();renderPanel();}
+function updatePhase(i,key,value){const p=getActive();if(!p)return;p.phases[i][key]=value;save();renderPanel();}
+function addPhase(){const p=getActive();if(!p)return;p.phases.push({name:'新しい工程',days:3,color:COLORS[p.phases.length%COLORS.length]});save();renderSidebar();renderPanel();}
+function removePhase(i){const p=getActive();if(!p)return;p.phases.splice(i,1);save();renderSidebar();renderPanel();}
+
+/* ════════════════════════
+   RENDER
+════════════════════════ */
+function renderAll(){renderTabs();renderSidebar();renderPanel();}
+
+function renderTabs(){
+  const bar=document.getElementById('tabBar');bar.innerHTML='';
+  projects.forEach(proj=>{
+    const d=document.createElement('div');
+    d.className='tab'+(proj.id===activeId?' active':'');
+    d.innerHTML=`<div class="tab-dot" style="background:${proj.color}"></div><span class="tab-name">${esc(proj.siteName)}</span><button class="tab-close">×</button>`;
+    d.addEventListener('click',e=>{
+      if(e.target.closest('.tab-close'))showConfirm('案件を削除しますか？',`「${esc(proj.siteName)}」を削除します。この操作は元に戻せません。`,()=>removeProjectConfirmed(proj.id));
+      else switchProject(proj.id);
+    });
+    bar.appendChild(d);
+  });
+}
+
+function renderSidebar(){
+  const proj=getActive(),el=document.getElementById('sidebarContent');
+  if(!proj){
+    el.innerHTML=`<div class="no-project"><div class="no-project-msg">＋ ボタンで<br>案件を追加してください</div><button class="no-project-btn" onclick="addProject()">＋ 案件を追加</button></div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="form-row">
+      <label>サイト名 / 案件名</label>
+      <input class="sitename-input" id="inp-sitename" type="text" placeholder="例：コーポレートサイト" value="${esc(proj.siteName)}" oninput="updateField('siteName',this.value)">
+    </div>
+    <div class="section-label" style="margin-top:18px">スケジュール設定</div>
+    <div class="settings-row">
+      <div class="form-row"><label>開始日</label><input type="date" value="${proj.startDate}" onchange="updateField('startDate',this.value)"></div>
+      <div class="form-row"><label>公開希望日</label><input type="date" value="${proj.endDate}" onchange="updateField('endDate',this.value)"></div>
+    </div>
+    <div class="settings-row">
+      <div class="form-row"><label>稼働日</label>
+        <select onchange="updateField('workDays',parseInt(this.value))">
+          <option value="5" ${proj.workDays===5?'selected':''}>月〜金（5日）</option>
+          <option value="6" ${proj.workDays===6?'selected':''}>月〜土（6日）</option>
+          <option value="7" ${proj.workDays===7?'selected':''}>毎日（7日）</option>
+        </select>
+      </div>
+      <div class="form-row"><label>バッファ（%）</label><input type="number" value="${proj.bufferPct}" min="0" max="50" onchange="updateField('bufferPct',parseInt(this.value)||0)"></div>
+    </div>
+    <div class="section-label" style="margin-top:4px">工程設定</div>
+    <div id="phaseList"></div>
+    <button class="add-phase-btn" onclick="addPhase()">＋ 工程を追加</button>
+    <button class="gen-btn" onclick="renderPanel()">スケジュールを更新</button>
+    <button class="del-proj-btn" onclick="showConfirm('案件を削除しますか？','この操作は元に戻せません。',()=>removeProjectConfirmed(${proj.id}))">この案件を削除</button>`;
+  renderPhaseList(proj);
+}
+
+function renderPhaseList(proj){
+  const el=document.getElementById('phaseList');if(!el)return;el.innerHTML='';
+  proj.phases.forEach((p,i)=>{
+    const div=document.createElement('div');div.className='phase-item';
+    div.innerHTML=`<div class="phase-header"><div class="phase-color-dot" style="background:${p.color}"></div><input class="phase-name-input" type="text" value="${esc(p.name)}" oninput="updatePhase(${i},'name',this.value)"><div class="phase-duration-wrap"><input class="phase-days-input" type="number" value="${p.days}" min="1" max="999" onchange="updatePhase(${i},'days',parseInt(this.value)||1)"><span class="days-label">日</span></div><button class="phase-remove-btn" onclick="removePhase(${i})">×</button></div>`;
+    el.appendChild(div);
+  });
+}
+
+function renderPanel(){
+  const proj=getActive(),el=document.getElementById('panelContent');
+  if(!proj){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">案件を追加してください</div></div>`;return;}
+
+  const startDate=new Date(proj.startDate),endDate=proj.endDate?new Date(proj.endDate):null;
+  const wpw=proj.workDays,bufPct=proj.bufferPct;
+
+  let cursor=new Date(startDate),totalWD=0;
+  const scheduled=proj.phases.map(p=>{
+    const s=new Date(cursor),e=addWD(cursor,p.days-1,wpw);
+    cursor=addWD(e,1,wpw);totalWD+=p.days;
+    return{...p,start:s,end:e};
+  });
+
+  // 【FIX-3】工程が0件のとき
+  if(totalWD===0){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">📐</div><div class="empty-text">工程を追加してください</div></div>`;
+    return;
+  }
+
+  const calcEnd=scheduled[scheduled.length-1].end;
+  const bufDays=Math.ceil(totalWD*bufPct/100);
+  const finalEnd=addWD(calcEnd,bufDays,wpw);
+  let dlStatus=null,dov=0;
+  if(endDate){const av=cntWD(startDate,endDate,wpw);dov=(totalWD+bufDays)-av;dlStatus=dov<=0?'ok':'over';}
+
+  const gS=startDate,gE=endDate&&endDate>finalEnd?endDate:finalEnd;
+  const totCal=Math.max(1,(gE-gS)/864e5)+2;
+  const pct=d=>Math.max(0,Math.min(100,(d-gS)/864e5/totCal*100));
+  const pctW=(s,e)=>Math.max(0.5,(e-s)/864e5/totCal*100);
+  const tickStep=Math.max(7,Math.round(totCal/8/7)*7);
+  const ticks=[];
+  for(let i=0;i<=totCal;i+=tickStep){const d=new Date(gS);d.setDate(d.getDate()+i);ticks.push({p:i/totCal*100,l:fmt(d)});}
+  const today=new Date();today.setHours(0,0,0,0);
+  const showT=today>=gS&&today<=gE,todP=pct(today);
+  const gridL=ticks.map(t=>`<div class="gantt-grid-line" style="left:${t.p}%"></div>`).join('');
+  const todL=showT?`<div class="gantt-today-line" style="left:${todP}%"></div>`:'';
+
+  const ganttRows=scheduled.map(p=>`<div class="gantt-row"><div class="gantt-row-label"><div class="gantt-phase-name">${esc(p.name)}</div><div class="gantt-phase-dates">${fmt(p.start)} → ${fmt(p.end)}</div></div><div class="gantt-timeline">${gridL}${todL}<div class="gantt-bar-container" style="left:${pct(p.start)}%;width:${pctW(p.start,p.end)}%;background:${p.color}"><span class="gantt-bar-text">${p.days}d</span></div></div></div>`).join('');
+  let bufRow='';
+  if(bufDays>0){const bS=addWD(calcEnd,1,wpw);bufRow=`<div class="gantt-row"><div class="gantt-row-label"><div class="gantt-phase-name" style="color:var(--text-dim)">バッファ期間</div><div class="gantt-phase-dates">${fmt(bS)} → ${fmt(finalEnd)}</div></div><div class="gantt-timeline">${gridL}${todL}<div class="gantt-bar-container" style="left:${pct(bS)}%;width:${pctW(bS,finalEnd)}%;background:rgba(122,130,153,.32);border:1px dashed rgba(122,130,153,.5)"><span class="gantt-bar-text" style="color:var(--text-dim)">${bufDays}d buf</span></div></div></div>`;}
+  let dlRow='';
+  if(endDate){dlRow=`<div class="gantt-row"><div class="gantt-row-label"><div class="gantt-phase-name" style="color:var(--accent2)">公開希望日</div><div class="gantt-phase-dates">${fmtF(endDate)}</div></div><div class="gantt-timeline">${gridL}<div style="position:absolute;inset:0 auto 0 ${pct(endDate)}%;width:2px;background:var(--accent2);z-index:4"></div><div style="position:absolute;top:10px;left:calc(${pct(endDate)}% + 4px);font-family:var(--mono);font-size:8px;color:var(--accent2);letter-spacing:1px;z-index:5;white-space:nowrap">DEADLINE</div></div></div>`;}
+
+  const tableRows=scheduled.map(p=>`<tr><td><div class="td-phase-name"><div class="td-dot" style="background:${p.color}"></div><span>${esc(p.name)}</span></div></td><td class="td-mono">${fmtF(p.start)}</td><td class="td-mono">${fmtF(p.end)}</td><td><span class="td-days" style="color:${p.color}">${p.days}</span><span class="td-pct"> 日</span></td><td><div class="td-pct">${(p.days/totalWD*100).toFixed(1)}%</div><div class="progress-mini"><div class="progress-mini-fill" style="width:${p.days/totalWD*100}%;background:${p.color}"></div></div></td></tr>`).join('');
+
+  let notice='';
+  if(dlStatus==='ok')notice=`<div class="notice ok">✓ 公開希望日まで <strong>${Math.abs(dov)} 稼働日</strong> の余裕があります</div>`;
+  else if(dlStatus==='over')notice=`<div class="notice over">⚠ スケジュールが <strong>${dov} 稼働日</strong> オーバーしています</div>`;
+  else notice=`<div class="notice">ℹ 公開希望日を入力するとデッドラインとの差分を確認できます。</div>`;
+  const badge=dlStatus==='ok'?`<span class="status-badge badge-ok">余裕あり</span>`:dlStatus==='over'?`<span class="status-badge badge-over">超過</span>`:`<span class="status-badge badge-pending">確認中</span>`;
+
+  el.innerHTML=`
+    <div style="margin-bottom:6px"><span style="font-family:var(--heading);font-size:24px;font-weight:700;letter-spacing:1px">${esc(proj.siteName)}</span>${badge}</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:24px">${fmtF(startDate)} — ${fmtF(finalEnd)}</div>
+    <div class="summary-grid">
+      <div class="summary-card accent"><div class="summary-card-label">総工期（稼働日）</div><div class="summary-card-value">${totalWD+bufDays}</div><div class="summary-card-sub">作業 ${totalWD}日 ＋ buf ${bufDays}日</div></div>
+      <div class="summary-card"><div class="summary-card-label">工程数</div><div class="summary-card-value">${proj.phases.length}</div><div class="summary-card-sub">フェーズ</div></div>
+      <div class="summary-card"><div class="summary-card-label">予定公開日</div><div class="summary-card-value" style="font-size:18px">${fmt(finalEnd)}</div><div class="summary-card-sub">${fmtF(finalEnd)}</div></div>
+      <div class="summary-card ${dlStatus==='over'?'danger':dlStatus==='ok'?'accent':''}"><div class="summary-card-label">デッドライン差分</div><div class="summary-card-value">${endDate?(dov>0?'+'+dov:dov)+'日':'—'}</div><div class="summary-card-sub">${endDate?(dov>0?'超過':'余裕'):'希望日未入力'}</div></div>
+    </div>
+    <div class="gantt-wrap">
+      <div class="gantt-title">ガントチャート</div>
+      <div class="gantt-axis">${ticks.map(t=>`<div class="gantt-tick" style="left:${t.p}%">${t.l}</div>`).join('')}${showT?`<div class="gantt-today-label" style="left:${todP}%">TODAY</div>`:''}</div>
+      <div>${ganttRows}${bufRow}${dlRow}</div>
+    </div>
+    ${notice}
+    <div class="section-sep"></div>
+    <div class="gantt-title">工程詳細</div>
+    <table class="phase-table">
+      <thead><tr><th>工程名</th><th>開始日</th><th>完了日</th><th>稼働日数</th><th>割合</th></tr></thead>
+      <tbody>${tableRows}${bufDays>0?`<tr style="opacity:.5"><td><div class="td-phase-name"><div class="td-dot" style="background:var(--text-muted)"></div><span>バッファ期間</span></div></td><td class="td-mono">—</td><td class="td-mono">—</td><td><span class="td-days" style="color:var(--text-dim)">${bufDays}</span><span class="td-pct"> 日</span></td><td><div class="td-pct">${bufPct}% buffer</div></td></tr>`:''}</tbody>
+    </table>`;
+}
+
+/* ════════════════════════
+   DATE HELPERS
+════════════════════════ */
+function isWD(d,wpw){const w=d.getDay();return wpw===7||(wpw===6&&w!==0)||(wpw===5&&w!==0&&w!==6);}
+function addWD(date,n,wpw){let d=new Date(date),a=0;while(a<n){d.setDate(d.getDate()+1);if(isWD(d,wpw))a++;}return d;}
+function cntWD(s,e,wpw){let d=new Date(s),c=0;while(d<=e){if(isWD(d,wpw))c++;d.setDate(d.getDate()+1);}return c;}
+
+/* ════════════════════════
+   DIALOG
+════════════════════════ */
+function showConfirm(title,msg,onOk){
+  const ov=document.createElement('div');ov.className='overlay';
+  ov.innerHTML=`<div class="dialog"><div class="dialog-title">${title}</div><div class="dialog-msg">${msg}</div><div class="dialog-btns"><button class="dialog-cancel">キャンセル</button><button class="dialog-confirm">削除する</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('.dialog-cancel').onclick=()=>ov.remove();
+  ov.querySelector('.dialog-confirm').onclick=()=>{ov.remove();onOk();};
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+}
+
+/* ════════════════════════
+   INIT
+════════════════════════ */
+// PINセットアップ（ログイン時は4桁揃ったら自動実行）
+setupPins('loginPinRow', doLogin);
+setupPins('regPinRow', null);
+setupPins('regPinRow2', null);
+
+// Enterキー
+document.getElementById('loginName').addEventListener('keydown',e=>{if(e.key==='Enter')document.querySelector('#loginPinRow .pin-digit').focus();});
+document.getElementById('regName').addEventListener('keydown',e=>{if(e.key==='Enter')document.querySelector('#regPinRow .pin-digit').focus();});
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('regBtn').addEventListener('click', doRegister);
+
+renderLoginChips();
+
+// 【FIX-1】セッションチェック → 表示先を決めてからbodyを見せる（チラつき防止）
+(function init(){
+  const session=localStorage.getItem('wps_session');
+  if(session){
+    const accounts=getAccounts();
+    if(accounts[session]){
+      currentUser=accounts[session].displayName;
+      showApp();
+    } else {
+      // セッションキーが無効（アカウントが消えた等）→ ログイン画面へ
+      localStorage.removeItem('wps_session');
+      showScreen('screenLogin');
+    }
+  } else {
+    showScreen('screenLogin');
+  }
+  // すべての処理が終わったあとに表示（チラつきゼロ）
+  document.body.classList.add('ready');
+})();
+</script>
+</body>
+</html>
