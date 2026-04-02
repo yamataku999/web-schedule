@@ -15,8 +15,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 /* 【FIX-1】 デフォルトでbodyを非表示にしてチラつき防止。JSで表示判定後にvisibleを付与 */
-body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;overflow-x:hidden;visibility:hidden;}
-body.ready{visibility:visible;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;min-height:100vh;overflow-x:hidden;}
 
 /* ══ AUTH SCREENS ══ */
 .auth-screen{
@@ -365,6 +364,7 @@ body.ready{visibility:visible;}
 </div>
 
 
+<script>
 /* ════════════════════════
    CONSTANTS
 ════════════════════════ */
@@ -947,7 +947,7 @@ renderLoginChips();
   } else {
     showScreen('screenLogin');
   }
-  // すべての処理が終わったあとに表示（チラつきゼロ）
+  // すべての処理が終わったあとに表示
   document.body.classList.add('ready');
 })();
 </script>
