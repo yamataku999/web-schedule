@@ -116,12 +116,77 @@ body.ready{visibility:visible;}
 .phase-header{display:flex;align-items:center;gap:7px;padding:8px 10px;}
 .phase-color-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .phase-name-input{flex:1;background:transparent;border:none;color:var(--text);font-family:var(--body);font-size:12px;outline:none;font-weight:500;min-width:0;}
+/* ロックされたタスク名表示 */
+.phase-name-label{flex:1;color:var(--text);font-family:var(--body);font-size:12px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default;}
 .phase-duration-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0;}
 .phase-days-input{width:40px;background:var(--bg);border:1px solid var(--border);color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:500;text-align:center;padding:3px 4px;outline:none;border-radius:2px;}
 .phase-days-input:focus{border-color:var(--accent);}
 .days-label{font-size:10px;color:var(--text-muted);font-family:var(--mono);}
 .phase-remove-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px;transition:color .2s;}
 .phase-remove-btn:hover{color:var(--accent2);}
+/* ─ Phase date row ─ */
+.phase-dates-row{display:flex;gap:6px;padding:0 10px 8px;align-items:center;}
+.phase-date-field{flex:1;display:flex;flex-direction:column;gap:3px;}
+.phase-date-label{font-family:var(--mono);font-size:8px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;}
+/* カレンダートリガーボタン */
+.due-trigger-wrap{display:flex;align-items:center;gap:4px;}
+.due-trigger{
+  flex:1;background:var(--bg);border:1px solid var(--border);
+  color:var(--text-muted);font-family:var(--mono);font-size:11px;
+  padding:6px 8px;border-radius:2px;cursor:pointer;text-align:left;
+  transition:all .15s;display:flex;align-items:center;gap:6px;
+  outline:none;user-select:none;
+}
+.due-trigger:hover,.due-trigger:focus{border-color:var(--accent3);color:var(--text);}
+.due-trigger.due-set{border-color:rgba(255,209,102,.5);color:var(--accent3);}
+.due-trigger-icon{font-size:11px;flex-shrink:0;}
+.due-trigger-clear{
+  flex-shrink:0;background:none;border:1px solid var(--border);
+  color:var(--text-muted);font-size:13px;line-height:1;padding:4px 7px;
+  border-radius:2px;cursor:pointer;transition:all .15s;
+}
+.due-trigger-clear:hover{border-color:var(--accent2);color:var(--accent2);}
+/* overdue row in table */
+.overdue-badge{display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:1px;background:rgba(255,107,107,.15);color:var(--accent2);border:1px solid rgba(255,107,107,.3);padding:1px 5px;border-radius:2px;margin-left:6px;vertical-align:middle;}
+
+/* ── CALENDAR POPUP ── */
+#calPopup{
+  position:fixed;z-index:2000;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:4px;padding:0;width:240px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  display:none;
+}
+#calPopup.open{display:block;}
+.cal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px 8px;border-bottom:1px solid var(--border);
+}
+.cal-month-label{font-family:var(--heading);font-size:15px;font-weight:600;letter-spacing:1px;color:var(--text);}
+.cal-nav{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:2px;transition:all .15s;}
+.cal-nav:hover{background:var(--surface2);color:var(--accent);}
+.cal-grid{padding:8px 10px 10px;display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-dow{font-family:var(--mono);font-size:8px;letter-spacing:1px;color:var(--text-muted);text-align:center;padding:2px 0 4px;text-transform:uppercase;}
+.cal-dow.sun{color:rgba(255,107,107,.6);}
+.cal-dow.sat{color:rgba(116,185,255,.6);}
+.cal-day{
+  font-family:var(--mono);font-size:11px;text-align:center;
+  padding:5px 2px;border-radius:2px;cursor:pointer;color:var(--text-dim);
+  transition:all .12s;background:none;border:none;
+}
+.cal-day:hover{background:var(--surface2);color:var(--text);}
+.cal-day.today{color:var(--accent);font-weight:700;}
+.cal-day.selected{background:var(--accent3);color:#000;font-weight:700;}
+.cal-day.today.selected{background:var(--accent);color:#000;}
+.cal-day.other-month{opacity:.25;}
+.cal-day.sun{color:rgba(255,107,107,.6);}
+.cal-day.sat{color:rgba(116,185,255,.6);}
+.cal-day.sun.selected,.cal-day.sat.selected{color:#000;}
+.cal-footer{border-top:1px solid var(--border);padding:6px 10px;display:flex;justify-content:space-between;align-items:center;}
+.cal-today-btn{background:none;border:1px solid var(--border);color:var(--text-dim);font-family:var(--mono);font-size:9px;letter-spacing:1px;padding:4px 8px;border-radius:2px;cursor:pointer;transition:all .15s;}
+.cal-today-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cal-clear-btn{background:none;border:none;color:var(--text-muted);font-family:var(--mono);font-size:9px;cursor:pointer;transition:color .15s;}
+.cal-clear-btn:hover{color:var(--accent2);}
 .add-phase-btn{width:100%;background:transparent;border:1px dashed var(--border);color:var(--text-dim);padding:8px;cursor:pointer;font-family:var(--body);font-size:11px;transition:all .2s;border-radius:2px;margin-top:4px;}
 .add-phase-btn:hover{border-color:var(--accent);color:var(--accent);}
 .gen-btn{width:100%;background:var(--accent);color:#000;border:none;padding:12px;font-family:var(--heading);font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:20px;transition:all .2s;border-radius:2px;}
@@ -285,7 +350,21 @@ body.ready{visibility:visible;}
   </div>
 </div>
 
-<script>
+<!-- ══ CALENDAR POPUP ══ -->
+<div id="calPopup">
+  <div class="cal-header">
+    <button class="cal-nav" id="calPrev">&#8249;</button>
+    <span class="cal-month-label" id="calMonthLabel"></span>
+    <button class="cal-nav" id="calNext">&#8250;</button>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+  <div class="cal-footer">
+    <button class="cal-today-btn" id="calTodayBtn">今日</button>
+    <button class="cal-clear-btn" id="calClearBtn">クリア</button>
+  </div>
+</div>
+
+
 /* ════════════════════════
    CONSTANTS
 ════════════════════════ */
@@ -293,8 +372,8 @@ const COLORS=['#4fffb0','#74b9ff','#ffd166','#ff6b6b','#a29bfe','#fd79a8','#00ce
 const AVATAR_COLORS=['#4fffb0','#74b9ff','#ffd166','#ff6b6b','#a29bfe','#fd79a8'];
 const DEFAULT_PHASES=[
   {name:'要件定義・ヒアリング',days:5},
-  {name:'初回資料作成',days:7},
-  {name:'2回目資料作成',days:7},
+  {name:'初回打ち合わせ',days:7},
+  {name:'2回目打ち合わせ',days:7},
   {name:'デザインレビュー・修正',days:5},
   {name:'コーディング',days:15},
   {name:'テスト・品質確認',days:4},
@@ -311,7 +390,10 @@ function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 function escAttr(s){return esc(s).replace(/'/g,'&#39;');}
 function nameKey(n){return n.trim().toLowerCase();}
 function simpleHash(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))&0xffff;return h;}
-function toDateStr(d){return d.toISOString().slice(0,10);}
+function toDateStr(d){
+  // ISOString(UTC)ではなくローカル日付を使用 → タイムゾーンズレ防止
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 function fmt(d){return d.toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'});}
 function fmtF(d){return d.toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'});}
 
@@ -489,7 +571,7 @@ function addProject(){
     id:Date.now(),siteName:'新規案件'+(projects.length+1),
     startDate:toDateStr(today),endDate:toDateStr(end),
     workDays:5,bufferPct:15,
-    phases:DEFAULT_PHASES.map((p,i)=>({name:p.name,days:p.days,color:COLORS[i%COLORS.length]})),
+    phases:DEFAULT_PHASES.map((p,i)=>({name:p.name,days:p.days,color:COLORS[i%COLORS.length],phaseStart:'',phaseDue:''})),
     color:COLORS[projects.length%COLORS.length]
   };
   projects.push(proj);activeId=proj.id;save();renderAll();
@@ -505,7 +587,7 @@ function switchProject(id){activeId=id;renderAll();}
 function getActive(){return projects.find(p=>p.id===activeId)||null;}
 function updateField(key,value){const p=getActive();if(!p)return;p[key]=value;if(key==='siteName')renderTabs();save();renderPanel();}
 function updatePhase(i,key,value){const p=getActive();if(!p)return;p.phases[i][key]=value;save();renderPanel();}
-function addPhase(){const p=getActive();if(!p)return;p.phases.push({name:'新しい工程',days:3,color:COLORS[p.phases.length%COLORS.length]});save();renderSidebar();renderPanel();}
+function addPhase(){const p=getActive();if(!p)return;p.phases.push({name:'新しい工程',days:3,color:COLORS[p.phases.length%COLORS.length],phaseStart:'',phaseDue:''});save();renderSidebar();renderPanel();}
 function removePhase(i){const p=getActive();if(!p)return;p.phases.splice(i,1);save();renderSidebar();renderPanel();}
 
 /* ════════════════════════
@@ -565,9 +647,42 @@ function renderPhaseList(proj){
   const el=document.getElementById('phaseList');if(!el)return;el.innerHTML='';
   proj.phases.forEach((p,i)=>{
     const div=document.createElement('div');div.className='phase-item';
-    div.innerHTML=`<div class="phase-header"><div class="phase-color-dot" style="background:${p.color}"></div><input class="phase-name-input" type="text" value="${esc(p.name)}" oninput="updatePhase(${i},'name',this.value)"><div class="phase-duration-wrap"><input class="phase-days-input" type="number" value="${p.days}" min="1" max="999" onchange="updatePhase(${i},'days',parseInt(this.value)||1)"><span class="days-label">日</span></div><button class="phase-remove-btn" onclick="removePhase(${i})">×</button></div>`;
+    const pd=p.phaseDue||'';
+    const label=pd?fmtF(new Date(pd)):'日付を選択...';
+    div.innerHTML=`
+      <div class="phase-header">
+        <div class="phase-color-dot" style="background:${p.color}"></div>
+        <span class="phase-name-label">${esc(p.name)}</span>
+        <div class="phase-duration-wrap">
+          <input class="phase-days-input" type="number" value="${p.days}" min="1" max="999" onchange="updatePhase(${i},'days',parseInt(this.value)||1)">
+          <span class="days-label">日</span>
+        </div>
+        <button class="phase-remove-btn" onclick="removePhase(${i})">×</button>
+      </div>
+      <div class="phase-dates-row">
+        <div class="phase-date-field" style="flex:none;width:100%">
+          <span class="phase-date-label">納期</span>
+          <div class="due-trigger-wrap">
+            <div class="due-trigger ${pd?'due-set':''}" tabindex="0" role="button" data-phase="${i}">
+              <span class="due-trigger-icon">📅</span>
+              <span class="due-trigger-text">${label}</span>
+            </div>
+            ${pd?`<button class="due-trigger-clear" onclick="clearDue(event,${i})">×</button>`:''}
+          </div>
+        </div>
+      </div>`;
+    // カレンダートリガーのクリック・キーボードイベント
+    const trigger = div.querySelector('.due-trigger');
+    trigger.addEventListener('click', function(){ openCalendar(i, this); });
+    trigger.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){e.preventDefault();openCalendar(i,this);} });
     el.appendChild(div);
   });
+}
+
+function clearDue(e, i){
+  e.stopPropagation();
+  updatePhase(i,'phaseDue','');
+  renderSidebar();renderPanel();
 }
 
 function renderPanel(){
@@ -577,11 +692,24 @@ function renderPanel(){
   const startDate=new Date(proj.startDate),endDate=proj.endDate?new Date(proj.endDate):null;
   const wpw=proj.workDays,bufPct=proj.bufferPct;
 
+  // 今日
+  const today=new Date();today.setHours(0,0,0,0);
+
   let cursor=new Date(startDate),totalWD=0;
   const scheduled=proj.phases.map(p=>{
-    const s=new Date(cursor),e=addWD(cursor,p.days-1,wpw);
-    cursor=addWD(e,1,wpw);totalWD+=p.days;
-    return{...p,start:s,end:e};
+    const hasDue=p.phaseDue&&p.phaseDue!=='';
+    const s=new Date(cursor);
+    let e,days;
+    if(hasDue){
+      e=new Date(p.phaseDue); days=Math.max(1,cntWD(s,e,wpw));
+      cursor=addWD(e,1,wpw);
+    } else {
+      e=addWD(cursor,p.days-1,wpw); days=p.days;
+      cursor=addWD(e,1,wpw);
+    }
+    totalWD+=days;
+    const isOverdue=hasDue&&today>e;
+    return{...p,start:s,end:e,actualDays:days,isOverdue,hasDue};
   });
 
   // 【FIX-3】工程が0件のとき
@@ -603,18 +731,44 @@ function renderPanel(){
   const tickStep=Math.max(7,Math.round(totCal/8/7)*7);
   const ticks=[];
   for(let i=0;i<=totCal;i+=tickStep){const d=new Date(gS);d.setDate(d.getDate()+i);ticks.push({p:i/totCal*100,l:fmt(d)});}
-  const today=new Date();today.setHours(0,0,0,0);
   const showT=today>=gS&&today<=gE,todP=pct(today);
   const gridL=ticks.map(t=>`<div class="gantt-grid-line" style="left:${t.p}%"></div>`).join('');
   const todL=showT?`<div class="gantt-today-line" style="left:${todP}%"></div>`:'';
 
-  const ganttRows=scheduled.map(p=>`<div class="gantt-row"><div class="gantt-row-label"><div class="gantt-phase-name">${esc(p.name)}</div><div class="gantt-phase-dates">${fmt(p.start)} → ${fmt(p.end)}</div></div><div class="gantt-timeline">${gridL}${todL}<div class="gantt-bar-container" style="left:${pct(p.start)}%;width:${pctW(p.start,p.end)}%;background:${p.color}"><span class="gantt-bar-text">${p.days}d</span></div></div></div>`).join('');
+  const ganttRows=scheduled.map(p=>{
+    const barColor=p.isOverdue?'#ff6b6b':p.color;
+    // 納期マーカー（明示されている場合）
+    const dueMarker=p.hasDue?`<div style="position:absolute;top:0;bottom:0;left:${pct(p.end)}%;width:2px;background:${p.isOverdue?'#ff6b6b':p.color};opacity:.8;z-index:6"></div>`:'';
+    const overdueLabel=p.isOverdue?`<span style="font-family:var(--mono);font-size:8px;color:var(--accent2);margin-left:4px">⚠ 超過</span>`:'';
+    return `<div class="gantt-row">
+      <div class="gantt-row-label">
+        <div class="gantt-phase-name">${esc(p.name)}${overdueLabel}</div>
+        <div class="gantt-phase-dates">${fmt(p.start)} → ${fmt(p.end)}${p.hasDue?' ★':''}</div>
+      </div>
+      <div class="gantt-timeline">
+        ${gridL}${todL}${dueMarker}
+        <div class="gantt-bar-container" style="left:${pct(p.start)}%;width:${pctW(p.start,p.end)}%;background:${barColor};${p.isOverdue?'opacity:.85':''}">
+          <span class="gantt-bar-text">${p.actualDays}d</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
   let bufRow='';
   if(bufDays>0){const bS=addWD(calcEnd,1,wpw);bufRow=`<div class="gantt-row"><div class="gantt-row-label"><div class="gantt-phase-name" style="color:var(--text-dim)">バッファ期間</div><div class="gantt-phase-dates">${fmt(bS)} → ${fmt(finalEnd)}</div></div><div class="gantt-timeline">${gridL}${todL}<div class="gantt-bar-container" style="left:${pct(bS)}%;width:${pctW(bS,finalEnd)}%;background:rgba(122,130,153,.32);border:1px dashed rgba(122,130,153,.5)"><span class="gantt-bar-text" style="color:var(--text-dim)">${bufDays}d buf</span></div></div></div>`;}
   let dlRow='';
   if(endDate){dlRow=`<div class="gantt-row"><div class="gantt-row-label"><div class="gantt-phase-name" style="color:var(--accent2)">公開希望日</div><div class="gantt-phase-dates">${fmtF(endDate)}</div></div><div class="gantt-timeline">${gridL}<div style="position:absolute;inset:0 auto 0 ${pct(endDate)}%;width:2px;background:var(--accent2);z-index:4"></div><div style="position:absolute;top:10px;left:calc(${pct(endDate)}% + 4px);font-family:var(--mono);font-size:8px;color:var(--accent2);letter-spacing:1px;z-index:5;white-space:nowrap">DEADLINE</div></div></div>`;}
 
-  const tableRows=scheduled.map(p=>`<tr><td><div class="td-phase-name"><div class="td-dot" style="background:${p.color}"></div><span>${esc(p.name)}</span></div></td><td class="td-mono">${fmtF(p.start)}</td><td class="td-mono">${fmtF(p.end)}</td><td><span class="td-days" style="color:${p.color}">${p.days}</span><span class="td-pct"> 日</span></td><td><div class="td-pct">${(p.days/totalWD*100).toFixed(1)}%</div><div class="progress-mini"><div class="progress-mini-fill" style="width:${p.days/totalWD*100}%;background:${p.color}"></div></div></td></tr>`).join('');
+  const tableRows=scheduled.map(p=>{
+    const dueDisp=p.hasDue?`<span style="color:var(--accent3);font-size:10px">★ </span>${fmtF(p.end)}`:fmtF(p.end);
+    const overdueBadge=p.isOverdue?`<span class="overdue-badge">超過</span>`:'';
+    return `<tr style="${p.isOverdue?'background:rgba(255,107,107,.04)':''}">
+      <td><div class="td-phase-name"><div class="td-dot" style="background:${p.isOverdue?'#ff6b6b':p.color}"></div><span>${esc(p.name)}</span>${overdueBadge}</div></td>
+      <td class="td-mono">${fmtF(p.start)}</td>
+      <td class="td-mono">${dueDisp}</td>
+      <td><span class="td-days" style="color:${p.isOverdue?'var(--accent2)':p.color}">${p.actualDays}</span><span class="td-pct"> 日</span></td>
+      <td><div class="td-pct">${(p.actualDays/totalWD*100).toFixed(1)}%</div><div class="progress-mini"><div class="progress-mini-fill" style="width:${p.actualDays/totalWD*100}%;background:${p.isOverdue?'var(--accent2)':p.color}"></div></div></td>
+    </tr>`;
+  }).join('');
 
   let notice='';
   if(dlStatus==='ok')notice=`<div class="notice ok">✓ 公開希望日まで <strong>${Math.abs(dov)} 稼働日</strong> の余裕があります</div>`;
@@ -640,9 +794,13 @@ function renderPanel(){
     <div class="section-sep"></div>
     <div class="gantt-title">工程詳細</div>
     <table class="phase-table">
-      <thead><tr><th>工程名</th><th>開始日</th><th>完了日</th><th>稼働日数</th><th>割合</th></tr></thead>
+      <thead><tr><th>工程名</th><th>着手日</th><th>納期</th><th>稼働日数</th><th>割合</th></tr></thead>
       <tbody>${tableRows}${bufDays>0?`<tr style="opacity:.5"><td><div class="td-phase-name"><div class="td-dot" style="background:var(--text-muted)"></div><span>バッファ期間</span></div></td><td class="td-mono">—</td><td class="td-mono">—</td><td><span class="td-days" style="color:var(--text-dim)">${bufDays}</span><span class="td-pct"> 日</span></td><td><div class="td-pct">${bufPct}% buffer</div></td></tr>`:''}</tbody>
-    </table>`;
+    </table>
+    <div style="margin-top:12px;font-family:var(--mono);font-size:9px;color:var(--text-muted);line-height:1.8">
+      <span style="color:var(--accent3)">★</span> 納期を設定済み &nbsp;
+      <span style="color:var(--accent2)">⚠</span> 納期超過
+    </div>`;
 }
 
 /* ════════════════════════
@@ -651,6 +809,99 @@ function renderPanel(){
 function isWD(d,wpw){const w=d.getDay();return wpw===7||(wpw===6&&w!==0)||(wpw===5&&w!==0&&w!==6);}
 function addWD(date,n,wpw){let d=new Date(date),a=0;while(a<n){d.setDate(d.getDate()+1);if(isWD(d,wpw))a++;}return d;}
 function cntWD(s,e,wpw){let d=new Date(s),c=0;while(d<=e){if(isWD(d,wpw))c++;d.setDate(d.getDate()+1);}return c;}
+
+/* ════════════════════════
+   CALENDAR POPUP
+════════════════════════ */
+const CAL_DAYS_JP=['日','月','火','水','木','金','土'];
+let _calPhaseIdx=null, _calYear=0, _calMonth=0;
+
+function openCalendar(phaseIdx, anchor){
+  _calPhaseIdx=phaseIdx;
+  const proj=getActive();
+  const existing=proj&&proj.phases[phaseIdx]&&proj.phases[phaseIdx].phaseDue?new Date(proj.phases[phaseIdx].phaseDue):null;
+  const now=new Date();
+  _calYear =(existing||now).getFullYear();
+  _calMonth=(existing||now).getMonth();
+  renderCal();
+
+  // ポップアップの位置をアンカーの下に合わせる
+  const popup=document.getElementById('calPopup');
+  popup.classList.add('open');
+  const rect=anchor.getBoundingClientRect();
+  const pw=240, ph=280;
+  let left=rect.left, top=rect.bottom+4;
+  if(left+pw>window.innerWidth-8) left=window.innerWidth-pw-8;
+  if(top+ph>window.innerHeight-8) top=rect.top-ph-4;
+  popup.style.left=left+'px';
+  popup.style.top =top +'px';
+}
+
+function closeCalendar(){ document.getElementById('calPopup').classList.remove('open'); _calPhaseIdx=null; }
+
+function renderCal(){
+  const popup=document.getElementById('calPopup');
+  const label=document.getElementById('calMonthLabel');
+  const grid =document.getElementById('calGrid');
+
+  label.textContent=`${_calYear}年 ${_calMonth+1}月`;
+
+  const proj=getActive();
+  const selStr=proj&&_calPhaseIdx!==null?proj.phases[_calPhaseIdx]?.phaseDue||'':'';
+  const sel=selStr?new Date(selStr):null;
+  const todayD=new Date(); todayD.setHours(0,0,0,0);
+
+  // 曜日ヘッダー
+  let html=CAL_DAYS_JP.map((d,i)=>`<div class="cal-dow ${i===0?'sun':i===6?'sat':''}">${d}</div>`).join('');
+
+  // 月の最初の日と最後の日
+  const first=new Date(_calYear,_calMonth,1);
+  const last =new Date(_calYear,_calMonth+1,0);
+  const startDow=first.getDay(); // 0=日
+
+  // 前月の余白
+  for(let i=0;i<startDow;i++){
+    const d=new Date(_calYear,_calMonth,-(startDow-i-1));
+    html+=`<button class="cal-day other-month" data-date="${toDateStr(d)}">${d.getDate()}</button>`;
+  }
+  // 当月
+  for(let d=1;d<=last.getDate();d++){
+    const date=new Date(_calYear,_calMonth,d);
+    const ds=toDateStr(date);
+    const dow=date.getDay();
+    const isToday=date.getTime()===todayD.getTime();
+    const isSel=sel&&toDateStr(sel)===ds;
+    const cls=['cal-day', dow===0?'sun':dow===6?'sat':'', isToday?'today':'', isSel?'selected':''].filter(Boolean).join(' ');
+    html+=`<button class="${cls}" data-date="${ds}">${d}</button>`;
+  }
+  // 次月の余白（6行になるまで）
+  const cells=startDow+last.getDate();
+  const remain=cells%7===0?0:7-(cells%7);
+  for(let i=1;i<=remain;i++){
+    const date=new Date(_calYear,_calMonth+1,i);
+    html+=`<button class="cal-day other-month" data-date="${toDateStr(date)}">${i}</button>`;
+  }
+
+  grid.innerHTML=html;
+  grid.querySelectorAll('.cal-day').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const ds=btn.getAttribute('data-date');
+      if(_calPhaseIdx!==null){ updatePhase(_calPhaseIdx,'phaseDue',ds); renderSidebar(); renderPanel(); }
+      closeCalendar();
+    });
+  });
+}
+
+// カレンダーのナビ
+document.getElementById('calPrev').addEventListener('click',()=>{ _calMonth--; if(_calMonth<0){_calMonth=11;_calYear--;} renderCal(); });
+document.getElementById('calNext').addEventListener('click',()=>{ _calMonth++; if(_calMonth>11){_calMonth=0;_calYear++;} renderCal(); });
+document.getElementById('calTodayBtn').addEventListener('click',()=>{ const n=new Date(); _calYear=n.getFullYear();_calMonth=n.getMonth(); renderCal(); });
+document.getElementById('calClearBtn').addEventListener('click',()=>{ if(_calPhaseIdx!==null){updatePhase(_calPhaseIdx,'phaseDue','');renderSidebar();renderPanel();} closeCalendar(); });
+
+// 外側クリックで閉じる
+document.addEventListener('click',e=>{ const p=document.getElementById('calPopup'); if(p.classList.contains('open')&&!p.contains(e.target)&&!e.target.closest('.due-trigger')&&!e.target.closest('.due-trigger-wrap')) closeCalendar(); });
+// ESCで閉じる
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCalendar(); });
 
 /* ════════════════════════
    DIALOG
